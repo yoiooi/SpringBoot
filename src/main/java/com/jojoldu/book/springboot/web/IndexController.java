@@ -1,5 +1,7 @@
 package com.jojoldu.book.springboot.web;
 
+import com.jojoldu.book.springboot.config.auth.LoginUser;
+import com.jojoldu.book.springboot.config.auth.dto.SessionUser;
 import com.jojoldu.book.springboot.service.posts.PostsService;
 import com.jojoldu.book.springboot.web.dto.PostsResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -8,14 +10,23 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import javax.servlet.http.HttpSession;
+
 @RequiredArgsConstructor
 @Controller
 public class IndexController {
     private final PostsService postsService;
+    //private final HttpSession httpSession;
 
     @GetMapping("/")
-    public String index(Model model) { // 서버 템플릿 엔진에서 사용할 수 있는 객체를 저장
+    public String index(Model model, @LoginUser SessionUser user) { // Model - 서버 템플릿 엔진에서 사용할 수 있는 객체를 저장, @LoginUser - 세션 정보를 가져옴
         model.addAttribute("posts", postsService.findAllDesc()); // postsService.findAllDesc() 로 가져온 결과를 posts로 index.mustache로 전달
+        //SessionUser user = (SessionUser) httpSession.getAttribute("user"); // CustomsOAuth2UserService 에서 로그인 성공 시 세션에 SessionUser를 저장하도록 구성했음
+
+        if(user != null) { // 세션에 저장된 값이 있는지에 따라 다르게 처리
+            model.addAttribute("userName", user.getName());
+        }
+
         return "index";
     }
 
